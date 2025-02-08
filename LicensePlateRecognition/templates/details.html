@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Details</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- Font Awesome -->
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 20px 0;
+            animation: fadeIn 2s ease-in-out;
+        }
+
+        .details-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px auto;
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            animation: slideIn 1s ease-in-out;
+        }
+
+        .details-container p {
+            font-size: 1.2rem;
+            margin: 10px 0;
+        }
+
+        .edit-btn {
+            background: #00bcd4;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .edit-btn:hover {
+            background: #0097a7;
+        }
+
+        /* Home Button */
+        .home-btn {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            background: #00bcd4;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: background 0.3s ease;
+            font-size: 24px;
+        }
+
+        .home-btn:hover {
+            background: #0097a7;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Home Button with Home Icon -->
+    <button class="home-btn" onclick="window.location.href='/';">
+        <i class="fas fa-home"></i> <!-- Font Awesome home icon -->
+    </button>
+
+    <h1>Vehicle Details</h1>
+
+    <div class="details-container">
+        {% if data %}
+            <p><strong>Plate Number:</strong> {{ data[1] }}</p>
+            <p><strong>Owner:</strong> {{ data[2] }}</p>
+            <p><strong>Fines:</strong> {{ data[3] }}</p>
+            <p><strong>Accidents:</strong> {{ data[4] }}</p>
+            <a href="/edit_entry/{{ data[0] }}"><button class="add-btn">Edit</button></a>
+            
+        {% else %}
+            <p>No details found for this number plate.</p>
+            <a href="/add_entry"><button class="add-btn">Add Row</button></a>
+        {% endif %}
+    </div>
+</body>
+</html>

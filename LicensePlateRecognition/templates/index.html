@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Plate Extraction</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Animate.css for animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298, #4a6fa5, #6c8ebf);
+            color: white;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        h1, h2 {
+            text-align: center;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        h1 {
+            background-clip: text;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            background: linear-gradient(90deg, #00bcd4, #0097a7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: fadeInDown 1.5s ease-in-out;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-top: 40px;
+            color: #00bcd4;
+            animation: fadeInUp 1.5s ease-in-out;
+        }
+
+        /* Form Styles */
+        #upload-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px auto;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            animation: fadeIn 2s ease-in-out;
+        }
+
+        #image-input {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 2px solid #00bcd4;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            width: 100%;
+            transition: border-color 0.3s ease;
+        }
+
+        #image-input:focus {
+            border-color: #0097a7;
+            outline: none;
+        }
+
+        #upload-form button {
+            background: linear-gradient(90deg, #00bcd4, #0097a7);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        #upload-form button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 188, 212, 0.4);
+        }
+
+        /* Image Display Styles */
+        #full-image {
+            max-width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            display: none;
+            margin: 20px auto;
+            animation: fadeIn 2s ease-in-out;
+        }
+
+        #cropped-images {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px auto;
+        }
+
+        #cropped-images img {
+            max-width: 200px;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        #cropped-images img:hover {
+            transform: scale(1.05);
+        }
+
+        /* Get Details Section */
+        #get-details-section {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        #numberplate-input {
+            padding: 10px;
+            border: 2px solid #00bcd4;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            width: 200px;
+            transition: border-color 0.3s ease;
+        }
+
+        #numberplate-input:focus {
+            border-color: #0097a7;
+            outline: none;
+        }
+
+        #submit-numberplate-btn {
+            background: linear-gradient(90deg, #00bcd4, #0097a7);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        #submit-numberplate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 188, 212, 0.4);
+        }
+
+        /* Get Details Button */
+        #get-details-btn {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            background: linear-gradient(90deg, #00bcd4, #0097a7);
+            color: white;
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 8px 16px rgba(0, 188, 212, 0.4);
+            transition: transform 0.3s ease;
+            animation: fadeInRight 1.5s ease-in-out;
+        }
+
+        #get-details-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Get Details Button -->
+    <button id="get-details-btn" onclick="showInputField()">Get Details</button>
+
+    <!-- Get Details Section (Initially Hidden) -->
+    <div id="get-details-section">
+        <input type="text" id="numberplate-input" placeholder="Enter Number Plate">
+        <button id="submit-numberplate-btn" onclick="submitNumberPlate()">Submit</button>
+    </div>
+
+    <!-- Main Content -->
+    <h1>Number Plate Extraction</h1>
+
+    <!-- Upload Form -->
+    <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" name="image" id="image-input" required>
+        <button type="submit">Extract</button>
+    </form>
+
+    <!-- Processed Image -->
+    <h2>Processed Image with Bounding Boxes:</h2>
+    <img id="full-image" src="" alt="Processed Image" />
+
+    <!-- Cropped Number Plates -->
+    <h2>Cropped Number Plates:</h2>
+    <div id="cropped-images"></div>
+
+    <!-- Link to Lookup Page -->
+    <div style="text-align: center; margin: 20px;">
+        <a href="/lookup" style="color: #00bcd4; text-decoration: none; font-size: 18px;">
+            Check if Number Plate Exists
+        </a>
+    </div>
+
+    <!-- Modal for Alerts -->
+    <div id="alert-modal" class="modal">
+        <p id="alert-message"></p>
+        <button onclick="closeModal()">Close</button>
+    </div>
+    <div id="modal-overlay" class="modal-overlay"></div>
+
+    <script>
+        // Function to show the input field for the number plate
+        function showInputField() {
+            document.getElementById('get-details-section').style.display = 'block';
+            document.getElementById('get-details-btn').style.display = 'none';
+        }
+
+        // Function to submit the number plate and redirect
+        function submitNumberPlate() {
+            var numberplate = document.getElementById('numberplate-input').value;
+            if (numberplate) {
+                window.location.href = '/details/' + numberplate;
+            } else {
+                alert('Please enter a number plate.');
+            }
+        }
+
+        // Function to show the modal with an alert message
+        function showModal(message) {
+            document.getElementById('alert-message').textContent = message;
+            document.getElementById('alert-modal').style.display = 'block';
+            document.getElementById('modal-overlay').style.display = 'block';
+        }
+
+        // Function to close the modal
+        function closeModal() {
+            document.getElementById('alert-modal').style.display = 'none';
+            document.getElementById('modal-overlay').style.display = 'none';
+        }
+
+        // Handle form submission
+        document.getElementById('upload-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            var formData = new FormData();
+            var fileInput = document.getElementById('image-input');
+            formData.append('image', fileInput.files[0]);
+
+            fetch('/extract', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display the processed image
+                let fullImageElement = document.getElementById('full-image');
+                fullImageElement.src = "data:image/jpeg;base64," + btoa(data.full_image);
+                fullImageElement.style.display = 'block';
+
+                // Display cropped images
+                let croppedImagesContainer = document.getElementById('cropped-images');
+                croppedImagesContainer.innerHTML = '';
+
+                data.cropped_images.forEach(function(croppedImage) {
+                    let img = document.createElement('img');
+                    img.src = "data:image/jpeg;base64," + btoa(croppedImage);
+                    croppedImagesContainer.appendChild(img);
+                });
+
+                // Show alerts if any
+                if (data.alerts && data.alerts.length > 0) {
+                    data.alerts.forEach(alert => {
+                        showModal(`Alert: ${alert.email}, your car with number plate ${alert.numberplate} has been found.`);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>

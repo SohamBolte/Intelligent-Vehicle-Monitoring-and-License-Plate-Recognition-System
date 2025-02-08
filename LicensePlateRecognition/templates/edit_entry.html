@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Vehicle Information</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 20px 0;
+            animation: fadeIn 2s ease-in-out;
+        }
+
+        /* Form Styles */
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px auto;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            animation: slideIn 1s ease-in-out;
+        }
+
+        label {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 2px solid #00bcd4;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            width: 100%;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            border-color: #0097a7;
+            outline: none;
+        }
+
+        button {
+            background: #00bcd4;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #0097a7;
+        }
+
+        /* Back Button */
+        .back-btn {
+            position: fixed;
+            left: 20px;
+            top: 20px;
+            background: #ff4d4d;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: background 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #cc0000;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Back Button -->
+    <button class="back-btn" onclick="window.location.href='/details'">Back to Details</button>
+
+    <h1>Edit Vehicle Information</h1>
+
+    <!-- Edit Form -->
+    <form method="POST">
+        <label for="plate_number">Plate Number:</label>
+        <input type="text" id="plate_number" name="plate_number" value="{{ row[1] }}" required><br><br>
+
+        <label for="owner">Owner:</label>
+        <input type="text" id="owner" name="owner" value="{{ row[2] }}" required><br><br>
+
+        <label for="fines">Fines:</label>
+        <input type="text" id="fines" name="fines" value="{{ row[3] }}"><br><br>
+
+        <label for="accidents">Accidents:</label>
+        <input type="text" id="accidents" name="accidents" value="{{ row[4] }}"><br><br>
+
+        <button type="submit">Save Changes</button>
+    </form>
+</body>
+</html>
