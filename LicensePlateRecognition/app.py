@@ -7,7 +7,7 @@ from PIL import Image
 from io import BytesIO
 from database import get_vehicle_info
 from flask import redirect
-
+import base64
 
 app = Flask(__name__)
 
@@ -154,17 +154,18 @@ def extract():
 
             cv2.putText(img_with_boxes, numberplate_text, (x, y-5), cv2.FONT_HERSHEY_COMPLEX, 0.8, (0, 255, 0), 2)
 
+    # Encode images as base64
     _, img_with_boxes_encoded = cv2.imencode('.jpg', img_with_boxes)
-    img_with_boxes_bytes = img_with_boxes_encoded.tobytes()
+    img_with_boxes_base64 = base64.b64encode(img_with_boxes_encoded).decode('utf-8')
 
-    cropped_images_bytes = []
+    cropped_images_base64 = []
     for cropped_img in cropped_images:
         _, cropped_img_encoded = cv2.imencode('.jpg', cropped_img)
-        cropped_images_bytes.append(cropped_img_encoded.tobytes())
+        cropped_images_base64.append(base64.b64encode(cropped_img_encoded).decode('utf-8'))
 
     return jsonify({
-        'full_image': img_with_boxes_bytes.decode('latin1'),
-        'cropped_images': [img.decode('latin1') for img in cropped_images_bytes],
+        'full_image': img_with_boxes_base64,
+        'cropped_images': cropped_images_base64,
         'alerts': alerts_found  # Send alerts to the frontend
     })
 
