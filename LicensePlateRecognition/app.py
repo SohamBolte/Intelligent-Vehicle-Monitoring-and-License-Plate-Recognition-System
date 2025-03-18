@@ -11,6 +11,7 @@ import torch
 import re
 from ultralytics import YOLO
 from transformers import TrOCRProcessor, VisionEncoderDecoderModel
+from alerts import send_email  # Import the email function
 
 app = Flask(__name__)
 
@@ -145,6 +146,11 @@ def extract():
                 for alert in alerts:
                     email = alert[0]
                     alerts_found.append({'email': email, 'numberplate': numberplate_text})
+
+                    # Send email alert
+                    subject = "Vehicle Alert"
+                    message = f"Your vehicle with number plate <strong>{numberplate_text}</strong> has been detected."
+                    send_email(email, subject, message)
 
             except sqlite3.IntegrityError:
                 pass  # Ignore duplicate entries
@@ -330,6 +336,11 @@ def extract_video():
                                 'email': email,
                                 'numberplate': numberplate_text
                             })
+
+                            # Send email alert
+                            subject = "Vehicle Alert"
+                            message = f"Your vehicle with number plate <strong>{numberplate_text}</strong> has been detected."
+                            send_email(email, subject, message)
 
                     except sqlite3.IntegrityError:
                         pass  # Ignore duplicate entries
