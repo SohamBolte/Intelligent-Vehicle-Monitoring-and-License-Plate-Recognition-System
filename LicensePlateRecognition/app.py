@@ -12,6 +12,7 @@ import re
 from ultralytics import YOLO
 from transformers import TrOCRProcessor, VisionEncoderDecoderModel
 from alerts import send_email  # Import the email function
+import os
 
 app = Flask(__name__)
 
@@ -278,100 +279,105 @@ def extract_video():
     video_path = "temp_video.mp4"
     video_file.save(video_path)
 
-    # Open the video file
-    cap = cv2.VideoCapture(video_path)
-    frame_count = 0
-    detected_plates = []
-    alerts_found = []  # To store alerts for the frontend
+    try:
+        # Open the video file
+        cap = cv2.VideoCapture(video_path)
+        frame_count = 0
+        detected_plates = []
+        alerts_found = []  # To store alerts for the frontend
 
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
 
-        # Process every nth frame (e.g., every 10th frame)
-        if frame_count % 10 == 0:
-            # Run YOLO inference to detect license plates
-            results = yolo_model(frame, device="mps")  # Use GPU if available
+            # Process every nth frame (e.g., every 10th frame)
+            if frame_count % 10 == 0:
+                # Run YOLO inference to detect license plates
+                results = yolo_model(frame, device="mps")  # Use GPU if available
 
-            for result in results:
-                for box in result.boxes.xyxy:
-                    x1, y1, x2, y2 = map(int, box)
+                for result in results:
+                    for box in result.boxes.xyxy:
+                        x1, y1, x2, y2 = map(int, box)
 
-                    # Crop the license plate region
-                    plate_crop = frame[y1:y2, x1:x2]
+                        # Crop the license plate region
+                        plate_crop = frame[y1:y2, x1:x2]
 
-                    # Convert to PIL format for OCR
-                    pil_plate = Image.fromarray(cv2.cvtColor(plate_crop, cv2.COLOR_BGR2RGB))
+                        # Convert to PIL format for OCR
+                        pil_plate = Image.fromarray(cv2.cvtColor(plate_crop, cv2.COLOR_BGR2RGB))
 
-                    # Preprocess the image for OCR
-                    pil_plate = pil_plate.convert("L")  # Convert to grayscale
-                    enhancer = ImageEnhance.Contrast(pil_plate)
-                    pil_plate = enhancer.enhance(2.0)  # Increase contrast
-                    pil_plate = pil_plate.resize((96, 24))  # Resize for TrOCR
-                    pil_plate = pil_plate.convert("RGB")
+                        # Preprocess the image for OCR
+                        pil_plate = pil_plate.convert("L")  # Convert to grayscale
+                        enhancer = ImageEnhance.Contrast(pil_plate)
+                        pil_plate = enhancer.enhance(2.0)  # Increase contrast
+                        pil_plate = pil_plate.resize((96, 24))  # Resize for TrOCR
+                        pil_plate = pil_plate.convert("RGB")
 
-                    # Perform OCR with TrOCR
-                    with torch.no_grad():
-                        pixel_values = trocr_processor(pil_plate, return_tensors="pt").pixel_values
-                        generated_ids = trocr_model.generate(pixel_values)
-                        numberplate_text = trocr_processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+                        # Perform OCR with TrOCR
+                        with torch.no_grad():
+                            pixel_values = trocr_processor(pil_plate, return_tensors="pt").pixel_values
+                            generated_ids = trocr_model.generate(pixel_values)
+                            numberplate_text = trocr_processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
-                    # Filter only alphanumeric characters
-                    numberplate_text = re.sub(r'[^A-Za-z0-9]', '', numberplate_text)
+                        # Filter only alphanumeric characters
+                        numberplate_text = re.sub(r'[^A-Za-z0-9]', '', numberplate_text)
 
-                    # Store number plate in database
-                    conn = sqlite3.connect('numberplates.db')
-                    cursor = conn.cursor()
-                    try:
-                        cursor.execute("INSERT INTO plates (numberplate) VALUES (?)", (numberplate_text,))
-                        conn.commit()
+                        # Store number plate in database
+                        conn = sqlite3.connect('numberplates.db')
+                        cursor = conn.cursor()
+                        try:
+                            cursor.execute("INSERT INTO plates (numberplate) VALUES (?)", (numberplate_text,))
+                            conn.commit()
 
-                        # Check for alerts
-                        cursor.execute("SELECT email FROM alerts WHERE numberplate = ?", (numberplate_text,))
-                        alerts = cursor.fetchall()
-                        for alert in alerts:
-                            email = alert[0]
-                            alerts_found.append({
-                                'email': email,
-                                'numberplate': numberplate_text
-                            })
+                            # Check for alerts
+                            cursor.execute("SELECT email FROM alerts WHERE numberplate = ?", (numberplate_text,))
+                            alerts = cursor.fetchall()
+                            for alert in alerts:
+                                email = alert[0]
+                                alerts_found.append({
+                                    'email': email,
+                                    'numberplate': numberplate_text
+                                })
 
-                            # Send email alert
-                            subject = "Vehicle Alert"
-                            message = f"Your vehicle with number plate <strong>{numberplate_text}</strong> has been detected."
-                            send_email(email, subject, message)
+                                # Send email alert
+                                subject = "Vehicle Alert"
+                                message = f"Your vehicle with number plate <strong>{numberplate_text}</strong> has been detected."
+                                send_email(email, subject, message)
 
-                    except sqlite3.IntegrityError:
-                        pass  # Ignore duplicate entries
-                    conn.close()
+                        except sqlite3.IntegrityError:
+                            pass  # Ignore duplicate entries
+                        conn.close()
 
-                    # Store detected plate information
-                    detected_plates.append({
-                        'frame_number': frame_count,
-                        'numberplate': numberplate_text,
-                        'plate_image': plate_crop
-                    })
+                        # Store detected plate information
+                        detected_plates.append({
+                            'frame_number': frame_count,
+                            'numberplate': numberplate_text,
+                            'plate_image': plate_crop
+                        })
 
-        frame_count += 1
+            frame_count += 1
 
-    cap.release()
+        cap.release()
 
-    # Encode detected plates as base64
-    detected_plates_base64 = []
-    for plate in detected_plates:
-        _, plate_img_encoded = cv2.imencode('.jpg', plate['plate_image'])
-        plate_img_base64 = base64.b64encode(plate_img_encoded).decode('utf-8')
-        detected_plates_base64.append({
-            'frame_number': plate['frame_number'],
-            'numberplate': plate['numberplate'],
-            'plate_image': plate_img_base64
+        # Encode detected plates as base64
+        detected_plates_base64 = []
+        for plate in detected_plates:
+            _, plate_img_encoded = cv2.imencode('.jpg', plate['plate_image'])
+            plate_img_base64 = base64.b64encode(plate_img_encoded).decode('utf-8')
+            detected_plates_base64.append({
+                'frame_number': plate['frame_number'],
+                'numberplate': plate['numberplate'],
+                'plate_image': plate_img_base64
+            })
+
+        return jsonify({
+            'detected_plates': detected_plates_base64,
+            'alerts': alerts_found  # Send alerts to the frontend
         })
 
-    return jsonify({
-        'detected_plates': detected_plates_base64,
-        'alerts': alerts_found  # Send alerts to the frontend
-    })
-
+    finally:
+        # Delete the temporary video file after processing
+        if os.path.exists(video_path):
+            os.remove(video_path)
 if __name__ == '__main__':
     app.run(debug=True)
