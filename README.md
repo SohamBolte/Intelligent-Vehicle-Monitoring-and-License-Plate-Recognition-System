@@ -7,4 +7,4 @@ Engineered a modular software architecture integrating vehicle detection, OCR-ba
 mechanisms for seamless operation.
 Designed and deployed a web-based dashboard with HTML, CSS, and JavaScript, enabling users to view vehicle
 logs, search records, and monitor alerts.
-Technology Used : Python, SQLite, Flask, RESTful APIs, OpenCV, EasyOCR, HTML, CSS, JavaScript.
+Technology Used : Python, SQLite, Flask, RESTful APIs, OpenCV, TrOCR, HTML, CSS, JavaScript.
